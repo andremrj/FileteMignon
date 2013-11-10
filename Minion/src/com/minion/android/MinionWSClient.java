@@ -17,9 +17,9 @@ public class MinionWSClient extends AsyncTask<String, Integer, MinionGenericResp
 	private final String URL = "http://serverdown.no-ip.org/MinionWebServer/services/MinionServices.MinionServicesHttpSoap11Endpoint/";
 
 	/* CONSTANTES */
-	public final String DEVICE_REGISTER_OPERATION = "deviceRegister";
-	public final String SEND_ALERT_OPERATION = "sendAlert";
-	public final String SEND_MESSAGE_OPERATION = "sendMessage";
+	public final static String DEVICE_REGISTER_OPERATION = "deviceRegister";
+	public final static String SEND_ALERT_OPERATION = "sendAlert";
+	public final static String SEND_MESSAGE_OPERATION = "sendMessage";
 
 	/* deviceRegister */
 	private final String SOAP_ACTION_DEVICEREGISTER = "http://service.minion.org/wakeUpPia";
