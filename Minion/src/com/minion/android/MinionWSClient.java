@@ -10,30 +10,39 @@ import org.ksoap2.transport.HttpTransportSE;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 public class MinionWSClient extends AsyncTask<String, Integer, MinionGenericResponse> {
 
-	private static final String NAMESPACE = "http://service.minion.org";
-	private static final String URL = "http://serverdown.no-ip.org/MinionWebServer/services/MinionServices.MinionServicesHttpSoap11Endpoint/";
-										  
+	private final String NAMESPACE = "http://service.minion.org";
+	private final String URL = "http://serverdown.no-ip.org/MinionWebServer/services/MinionServices.MinionServicesHttpSoap11Endpoint/";
+
 	/* CONSTANTES */
-	public static final String DEVICE_REGISTER_OPERATION = "deviceRegister";
-	public static final String SEND_ALERT_OPERATION = "sendAlert";
+	public final String DEVICE_REGISTER_OPERATION = "deviceRegister";
+	public final String SEND_ALERT_OPERATION = "sendAlert";
+	public final String SEND_MESSAGE_OPERATION = "sendMessage";
 
 	/* deviceRegister */
-	private static final String SOAP_ACTION_DEVICEREGISTER = "http://service.minion.org/wakeUpPia";
-	private static final String SOAP_METHOD_DEVICEREGISTER = "deviceRegister";
+	private final String SOAP_ACTION_DEVICEREGISTER = "http://service.minion.org/wakeUpPia";
+	private final String SOAP_METHOD_DEVICEREGISTER = "deviceRegister";
 
 	/* sendAlert */
-	private static final String SOAP_ACTION_SENDALERT = "http://service.minion.org/sendAlert";
-	private static final String SOAP_METHOD_SENDALERT = "sendAlert";
+	private final String SOAP_ACTION_SENDALERT = "http://service.minion.org/sendAlert";
+	private final String SOAP_METHOD_SENDALERT = "sendAlert";
+
+	/* sendMessage */
+	private final String SOAP_ACTION_SENDMENSSAGE = "http://service.minion.org/sendMessage";
+	private final String SOAP_METHOD_SENDMENSSAGE = "sendMessage";
 
 	private MinionGenericResponse result = new MinionGenericResponse();
 
 	private Context context;
 	private SoapSerializationEnvelope envelope;
 	private HttpTransportSE transport;
+
+	public MinionWSClient() {
+		this.envelope = null;
+		this.transport = null;
+	}
 
 	public MinionWSClient(Context context) {
 		this.context = context;
@@ -53,14 +62,13 @@ public class MinionWSClient extends AsyncTask<String, Integer, MinionGenericResp
 		try {
 			transport.call(SOAP_ACTION_DEVICEREGISTER, envelope);
 			SoapObject player = (SoapObject) envelope.getResponse();
-			// SoapObject player = (SoapObject) resultsRequestSOAP.getProperty("deviceRegisterResponse");
 			String responseCode = player.getProperty("responseCode").toString();
 			String responseDesc = player.getProperty("responseDesc").toString();
 
-			Log.v("PUTA", "responseCode:" + responseCode + "|responseDesc:" + responseDesc);
+			MnLog.i(this, "responseCode:" + responseCode + "|responseDesc:" + responseDesc);
 		} catch (Exception ex) {
 			result = null;
-			Log.v("PUTA", Log.getStackTraceString(ex));
+			MnLog.e(this, ex.getMessage(), ex);
 		}
 
 		return result;
@@ -85,7 +93,7 @@ public class MinionWSClient extends AsyncTask<String, Integer, MinionGenericResp
 		}
 
 		for (int i = 0; i < hola.size(); i++) {
-			Log.v("PUTA", "Elemento" + hola.get(i));
+			MnLog.i(this, "Elemento" + hola.get(i));
 		}
 
 		try {
@@ -95,12 +103,51 @@ public class MinionWSClient extends AsyncTask<String, Integer, MinionGenericResp
 			String responseCode = player.getProperty("responseCode").toString();
 			String responseDesc = player.getProperty("responseDesc").toString();
 
-			Log.v("PUTA", "responseCode:" + responseCode + "|responseDesc:" + responseDesc);
+			MnLog.i(this, "responseCode:" + responseCode + "|responseDesc:" + responseDesc);
 
 		} catch (Exception ex) {
 			result = null;
-			// Log.v("PUTA", Log.getStackTraceString(ex));
-			Log.e("PUTA", "I got an error", ex);
+			MnLog.e(this, ex.getMessage(), ex);
+		}
+
+		return result;
+	}
+
+	private MinionGenericResponse sendMessage(String userEnvia, String userRecibe, String msg) {
+
+		SoapObject request = new SoapObject(NAMESPACE, SOAP_METHOD_SENDMENSSAGE);
+		request.addProperty("userSend", userEnvia);
+		request.addProperty("userReceive", userRecibe);
+		request.addProperty("msg", msg);
+
+		envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+		envelope.dotNet = true;
+		envelope.setOutputSoapObject(request);
+		transport = new HttpTransportSE(URL);
+		List hola = null;
+		try {
+			hola = transport.getServiceConnection().getResponseProperties();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < hola.size(); i++) {
+			MnLog.i(this, "Elemento" + hola.get(i));
+		}
+
+		try {
+			transport.call(SOAP_ACTION_SENDMENSSAGE, envelope);
+			SoapObject player = (SoapObject) envelope.getResponse();
+			// SoapObject player = (SoapObject) resultsRequestSOAP.getProperty("deviceRegisterResponse");
+			String responseCode = player.getProperty("responseCode").toString();
+			String responseDesc = player.getProperty("responseDesc").toString();
+
+			MnLog.i(this, "responseCode:" + responseCode + "|responseDesc:" + responseDesc);
+
+		} catch (Exception ex) {
+			result = null;
+			MnLog.e(this, ex.getMessage(), ex);
 		}
 
 		return result;
@@ -116,10 +163,12 @@ public class MinionWSClient extends AsyncTask<String, Integer, MinionGenericResp
 			if (paramArrayOfParams[0].equals(DEVICE_REGISTER_OPERATION)) {
 
 				response = deviceRegister(paramArrayOfParams[1], paramArrayOfParams[2]);
-			}
-			if (paramArrayOfParams[0].equals(SEND_ALERT_OPERATION)) {
+			} else if (paramArrayOfParams[0].equals(SEND_ALERT_OPERATION)) {
 
 				response = sendAlert(paramArrayOfParams[1], paramArrayOfParams[2]);
+			} else if (paramArrayOfParams[0].equals(SEND_MESSAGE_OPERATION)) {
+
+				response = sendMessage(paramArrayOfParams[1], paramArrayOfParams[2], paramArrayOfParams[3]);
 			}
 		}
 		return response;

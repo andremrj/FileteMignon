@@ -3,6 +3,7 @@ package com.minion.android;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -10,7 +11,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMBaseIntentService;
@@ -24,6 +24,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 	Activity activityW;
 	String msg;
+	MinionApplication application;
 
 	public GCMIntentService() {
 
@@ -34,17 +35,17 @@ public class GCMIntentService extends GCMBaseIntentService {
 	@Override
 	protected void onError(Context ctx, String registrationId) {
 
-		Log.d("PUTA",
-
-		"Error recibido");
+		MnLog.d(this, "Error recibido");
 
 	}
 
 	@Override
 	protected void onMessage(Context ctx, Intent intent) {
 
-		if (MyApplication.isActivityVisible()) {
-			activityW = MyApplication.getWeakRef();
+		application = (MinionApplication) ((Activity) ctx).getApplication();
+
+		if (application.isActivityVisible()) {
+			activityW = application.getWeakRef();
 
 			if (activityW instanceof MainActivity) {
 
@@ -72,7 +73,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 				String titulo = intent.getExtras().getString("title");
 				String tipoMsg = intent.getExtras().getString("msgType");
 
-				Log.d("PUTA", tipoMsg);
+				MnLog.d(this, tipoMsg);
 
 				mesagges.add(msg);
 
@@ -106,7 +107,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 				mNotificationManager.notify(notifyID, mBuilder.build());
 
-				Log.d("PUTA", msg);
+				MnLog.d(this, msg);
 			}
 		}
 
@@ -117,10 +118,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		// Posteriormente enviaremos el id al Tomcat
 
-		Log.d("PUTA", "Registro recibido " + regId);
-		// JHHelper.registerTomcat(ctx, regId);
+		MnLog.d(this, "Registro recibido " + regId);
 
-		MainActivity.temporalDeregistro = regId;
+		MinionWSClient client = new MinionWSClient();
+		client.execute(MinionWSClient.DEVICE_REGISTER_OPERATION, regId);
 
 	}
 
@@ -129,9 +130,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
 		// Posteriormente enviaremos el id al Tomcat
 
-		Log.d("PUTA",
-
-		"Baja:" + regId);
+		MnLog.d(this, "Baja:" + regId);
 
 	}
 

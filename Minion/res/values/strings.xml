@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Minion</string>
+    <string name="app_name">Minion-PiAndre</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Alerta de André:</string>
     <string name="cargar_foto_galeria">Cargar de la galería</string>
     <string name="cargar_foto_camara">Hacer foto</string>
+    <string name="copiar_mensaje">Copiar mensaje</string>
+    <string name="eliminar_mensaje">Eliminar mensaje</string>
 
 </resources>
